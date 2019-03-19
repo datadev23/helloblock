@@ -1,0 +1,138 @@
+<?php 
+
+/**
+ * Implements hook_block_info().
+ */
+
+function hello_menu() {
+  $items['help'] = array(
+    'page callback' => 'hello_page',
+    'access callback' => TRUE,
+    'title' => 'hello',
+  );
+  return $items;
+}
+
+/**
+ * This page function shows a simple example of showing a page. 
+ */
+function hello_page() {
+  $page = array(
+    '#type' => 'markup',
+    '#markup' => t('This is information.', array('@url' => url('admin/structure/block'))),
+  );
+  return $page;
+}
+
+/**
+ * Implements hook_block_info().
+ *
+ * This hook declares what blocks are provided by the module.
+ */
+
+function hello_block_info() {
+
+  $blocks['hello_text'] = array(
+    // info: The name of the block.
+    'info' => t('hello block'),
+    // Block caching options (per role, per user, etc.)
+    // DRUPAL_CACHE_PER_ROLE is the default.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+
+
+  return $blocks;
+}
+
+
+
+/**
+ * Implements hook_block_view().
+ *
+ * This hook declares what blocks are provided by the module.
+ */
+function hello_block_view($delta = '') {
+
+	switch ($delta) {
+
+		 case 'hello_text':
+
+		 $block['subject'] = t("Hello block chart");
+		 $block['content'] = piechart();
+
+		 break;
+
+	}
+return $block;
+
+}
+
+/**
+* The function piechart is used to display a piechart. 
+*/
+
+function piechart() {
+
+/*
+*/
+
+  $data = db_select("block", "b")
+  ->fields('b', array('bid'));
+  $data->addExpression('COUNT(b.bid)', 'ncount');
+  $result = $data->execute();
+
+  // fetch data
+  $fetchdatablock = $result->fetchAll();
+
+  foreach ($fetchdatablock as $data) {
+  	$number_blocks = $data->ncount;
+  
+  }
+
+  $view_data = db_select("views_view","v")
+  ->fields('v', array('vid'));
+  $view_data->addExpression('COUNT(v.vid)', 'vcount');
+  $resultviews = $view_data->execute();
+
+  $fetchviewdata = $resultviews->fetchAll();
+  
+  foreach ($fetchviewdata as $view_data) {
+  	$number_views = $view_data->vcount;
+  
+  }
+
+  $role_data = db_select("role", "r")
+  ->fields('r',array('rid'));
+  $role_data->addExpression('COUNT(r.rid)', 'rcount');
+  $resultroles = $role_data->execute();
+
+    $fetchrolesdata = $resultroles->fetchAll();
+
+    foreach ($fetchrolesdata as $role_data) {
+  	$number_roles = $role_data->rcount;
+  
+  }
+
+
+
+  $settings['chart']['chartOne'] = array(  
+    'header' => array('Blocks', 'Views', 'Roles'),
+    'rows' => array(array($number_blocks, $number_views, $number_roles)),
+    'columns' => array('pie'),
+    'chartType' => 'PieChart',
+    'containerId' =>  'content',
+    'options' => array( 
+      'forceIFrame' => FALSE, 
+      'title' => 'The break down of my site',
+      'width' => 800,
+      'height' => 400  
+    )   
+  );
+
+  //Draw it.
+  $ret = draw_chart($settings); 
+
+
+}
+
+

@@ -1,0 +1,4 @@
+name = hello
+description = "This is a basic block"
+core = 7.x
+package = basic tools
